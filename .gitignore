@@ -1,2 +1,6 @@
 # data
-/data
+/data/*
+!/data/db.py
+
+# python crawler virtual environment
+/.venv

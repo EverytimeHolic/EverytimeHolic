@@ -11,5 +11,13 @@
 ## 프로젝트 소개
 
 ## 사용법
+```python
+$ python -m venv .venv
+# if window
+$ .\.venv\Scripts\activate
+# if mac
+$ .\.venv\bin\activate
+```
+
 
 ## 데이터 확보
