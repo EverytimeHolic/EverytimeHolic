@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # csv 파일로 변환할것
 
-lectures = [] # [["cur", "major", "id", "name", "num", "grade", "credit", "pf", "time", "eng", "score", "hw", "team", "mark", "att", "test"]]
+lectures = [] # [["cur", "major", "id", "name", "num", "grade", "credit", "pf", "time", "eng", "score", "want", "hw", "team", "mark", "att", "test"]]
 score_base = "0" # 평점이 0일때 조정할 기본값(평가가 없는 강의)
 
 # id: 과목번호
@@ -22,6 +22,7 @@ score_base = "0" # 평점이 0일때 조정할 기본값(평가가 없는 강의
 # time: 요일 및 교시 - [요일(월~토), 시작시간(1~14), 종료시간(1~14)] = 리스트로 구성, 분할된 경우 2개의 리스트로 구성 (비어있는경우 다수)
 # eng: 외국어 강의 여부 (비어있는 경우 다수)
 # score: 에타 강의평점 (0점일경우 4점으로 보정 - 미평가 강의)
+# want: 수강바구니
 
 # 랜덤요소
 # hw: 과제 1: 없음 0: 보통 -1: 많음
@@ -69,6 +70,7 @@ for row in range(3, 1286): # 비고항목 제외
         else:
             lecture.append(sheet.cell(row=row, column=column).value)
     lecture.append(score_base) # score자리추가
+    lecture.append("0") # want자리추가
     lectures.append(lecture)
 
 ############################
@@ -78,7 +80,7 @@ for row in range(3, 1286): # 비고항목 제외
 page = open('everytime_2023_2.html', 'rt', encoding='utf-8').read() # HTML read to String
 soup = BeautifulSoup(page, 'html.parser') # BS 객체 생성
 
-scores = [] #[id, num, score]
+scores = [] #[id, num, score, want]
 
 for tr in soup.select('tr'):
     temp = list(tr)[0].get_text()
@@ -87,24 +89,20 @@ for tr in soup.select('tr'):
     
     num = temp[temp.find('-')+1:]
     
+    want = list(tr)[9].get_text()
     
     star = tr.select_one('a')['title']
     if star == '0':
         star = score_base
-    scores.append([id, num, star])
+    scores.append([id, num, star, want])
 
 for score in scores:
     for lecture in lectures:
         if lecture[2] == score[0] and lecture[4] == score[1]:
-            lecture[10] = score[2]
+            lecture[10] = score[2] # score
+            lecture[11] = score[3] # want
 
 
-# lectures_score = [float(lecture[10]) for lecture in lectures]
-
-# plt.scatter([i for i in range(0, len(lectures_score))], lectures_score,)
-# plt.xlabel('lecture_id')
-# plt.ylabel('lecture_rate')
-# plt.show()
 
 ####################
 ### RANDOM_VALUE ###
@@ -122,13 +120,26 @@ for lecture in lectures:
         lecture.append(random.randrange(-2, 3))
         lecture.append(random.randrange(-2, 3))
         
+
+# lectures_score = [float(lecture[10]) for lecture in lectures]
+# lectures_want = [float(lecture[11]) for lecture in lectures]
+
+
+# plt.scatter(lectures_score, lectures_want)
+# plt.ylabel('student_choice')
+# plt.xlabel('lecture_rate')
+# plt.axis([0, 5, 0, 100])
+# plt.show()
+        
 ##################
 ### CSV_WRITER ###
 ##################
 
 f = open('data.csv', 'w', newline='')
 wr = csv.writer(f)
-wr.writerow(["cur", "major", "id", "name", "num", "grade", "credit", "pf", "time", "eng", "score", "hw", "team", "mark", "att", "test"])
+wr.writerow(["cur", "major", "id", "name", "num", "grade", "credit", "pf", "time", "eng", "score", "want", "hw", "team", "mark", "att", "test"])
 wr.writerows(lectures)
 
 f.close()
+
+print("complete")
